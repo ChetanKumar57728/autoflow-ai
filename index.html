@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AutoFlow AI</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #020617, #0f172a);
+      color: white;
+      text-align: center;
+    }
+
+    h1 {
+      margin-top: 40px;
+      font-size: 42px;
+      color: #22c55e;
+    }
+
+    p {
+      color: #94a3b8;
+    }
+
+    textarea {
+      width: 60%;
+      height: 110px;
+      border-radius: 12px;
+      padding: 15px;
+      font-size: 16px;
+      border: none;
+      outline: none;
+      margin-top: 20px;
+    }
+
+    button {
+      margin: 10px;
+      padding: 12px 25px;
+      border-radius: 10px;
+      border: none;
+      background: #22c55e;
+      color: black;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #16a34a;
+    }
+
+    .box {
+      margin: 30px auto;
+      width: 65%;
+      background: rgba(30,41,59,0.8);
+      padding: 20px;
+      border-radius: 15px;
+      text-align: left;
+    }
+
+    .task {
+      padding: 10px;
+      margin: 8px 0;
+      border-radius: 8px;
+      background: #1e293b;
+    }
+
+    .high { color: #ef4444; }
+    .medium { color: #facc15; }
+
+    .log {
+      margin-top: 15px;
+      color: #38bdf8;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>🚀 AutoFlow AI</h1>
+<p>Autonomous Multi-Agent Workflow System</p>
+
+<textarea id="input" placeholder="Example: Build app, test app, deploy app"></textarea><br>
+
+<button onclick="runAI()">Run AI Workflow</button>
+<button onclick="simulateDelay()">Simulate Delay</button>
+
+<div id="output" class="box">System Ready...</div>
+
+<script>
+
+let currentTasks = [];
+
+async function runAI() {
+  let input = document.getElementById("input").value;
+
+  if (!input) {
+    alert("Enter workflow!");
+    return;
+  }
+
+  document.getElementById("output").innerHTML = "⚙️ Initializing AI Agents...";
+
+  let res = await fetch("/run", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ input: input })
+  });
+
+  let data = await res.json();
+
+  currentTasks = data.tasks;
+
+  renderTasks(`
+  🧠 Task Agent → Extracted tasks<br>
+  📊 Planner Agent → Assigned priority<br>
+  🔍 Tracker Agent → Monitoring workflow<br>
+  🧾 Audit Agent → Logged actions
+  `, data.explanation);
+}
+
+function renderTasks(logText, explanation="") {
+  let html = "<h3>📋 Workflow Tasks</h3>";
+
+  currentTasks.forEach((t, i) => {
+    html += `
+    <div class="task">
+      ${i+1}. ${t.task} 
+      <span class="${t.priority === 'High' ? 'high' : 'medium'}">
+      (${t.priority})
+      </span> - ${t.status}
+    </div>`;
+  });
+
+  html += `<div class="log">${logText}</div>`;
+
+  if (explanation) {
+    html += `<div class="log"><br>💡 AI Insight: ${explanation}</div>`;
+  }
+
+  document.getElementById("output").innerHTML = html;
+}
+
+function simulateDelay() {
+  if (currentTasks.length === 0) {
+    alert("Run workflow first!");
+    return;
+  }
+
+  let index = Math.floor(Math.random() * currentTasks.length);
+
+  currentTasks[index].status = "Delayed ⚠️";
+
+  renderTasks(`⚠️ Tracker Agent → Delay detected in Task ${index+1}`);
+
+  setTimeout(() => {
+    currentTasks[index].status = "Recovered ✅";
+
+    renderTasks(`
+    🔄 Recovery Agent → Issue resolved automatically<br>
+    🧾 Audit Agent → Logged decision
+    `);
+  }, 1500);
+}
+
+</script>
+
+</body>
+</html>
